@@ -84,12 +84,15 @@ int main(int argk, char *argv[], char *envp[])
     case 0:			/* code executed only by child process */
       {
   printf("[%d] %d\n", jobNo, getpid());
+  int localJobNo = jobNo;
   jobNo++;
 	execvp(v[0], v);
+  printf("[%d]+ Done ", localJobNo);
   for (int i = 0; i < 20; i++)
   {
-    printf("\nV value: %d is: %s\n", i, v[i]);
+    printf("%s", v[i]);
   }
+  printf("\n");
       }
     default:			/* code executed only by parent process */
       {
