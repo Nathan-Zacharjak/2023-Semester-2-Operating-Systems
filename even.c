@@ -19,7 +19,7 @@ int main(int argc, char const *argv[]){
 
     int n = 0;
     if (argc == 2){
-        n = atoi(argv[1]);
+        n = atoi(argv[1]) * 2;
     }
     
     for (int i = 0; i < n; i+=2){
