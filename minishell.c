@@ -25,15 +25,14 @@ char            line[NL];	/* command input buffer */
 	shell prompt
  */
 
-prompt(void)
-{
+void prompt(void){
   fprintf(stdout, "\n msh> ");
   fflush(stdout);
-
+  return;
 }
 
 
-main(int argk, char *argv[], char *envp[])
+int main(int argk, char *argv[], char *envp[])
 /* argk - number of arguments */
 /* argv - argument vector from command line */
 /* envp - environment pointer */
@@ -50,7 +49,10 @@ main(int argk, char *argv[], char *envp[])
 
   while (1) {			/* do Forever */
     prompt();
-    fgets(line, NL, stdin);
+    char* fgetsReturn = fgets(line, NL, stdin);
+    if (fgetsReturn == NULL){
+      printf("fgets is NULL\n");
+    }
     fflush(stdin);
 
     if (feof(stdin)) {		/* non-zero on EOF  */
@@ -85,9 +87,11 @@ main(int argk, char *argv[], char *envp[])
     default:			/* code executed only by parent process */
       {
 	wpid = wait(0);
-	printf("%s done \n", v[0]);
+	printf("%s done id: %d\n", v[0], wpid);
 	break;
       }
     }				/* switch */
   }				/* while */
+
+  return 0;
 }				/* main */
