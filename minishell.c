@@ -82,7 +82,10 @@ int main(int argk, char *argv[], char *envp[])
     case 0:			/* code executed only by child process */
       {
 	execvp(v[0], v);
-	
+  for (int i = 0; i < 20; i++)
+  {
+    printf("\nV value: %d is: %s\n", i, v[i]);
+  }
       }
     default:			/* code executed only by parent process */
       {
