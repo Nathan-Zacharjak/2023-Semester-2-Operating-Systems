@@ -3,19 +3,19 @@
 #include <unistd.h>
 #include <signal.h>
 
-void ErrorHandler(int signalNum){
-    if (signalNum == SIGHUP){
-        printf("Ouch!\n");
-    } else if (signalNum == SIGINT){
-        printf("Yeah!\n");
-    }
+void ErrorHandlerHUP(int signalNum){
+    printf("Ouch!\n");
+}
+
+void ErrorHandlerINT(int signalNum){
+    printf("Yeah!\n");
 }
 
 // Takes a number n in the command line and prints out
 // the first n even numbers
 int main(int argc, char const *argv[]){
-    signal(SIGINT, ErrorHandler);
-    signal(SIGHUP, ErrorHandler);
+    signal(SIGINT, ErrorHandlerHUP);
+    signal(SIGHUP, ErrorHandlerINT);
 
     int n = 0;
     if (argc == 2){
