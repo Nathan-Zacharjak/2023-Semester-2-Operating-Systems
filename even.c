@@ -14,8 +14,8 @@ void ErrorHandlerINT(int signalNum){
 // Takes a number n in the command line and prints out
 // the first n even numbers
 int main(int argc, char const *argv[]){
-    signal(SIGINT, ErrorHandlerHUP);
-    signal(SIGHUP, ErrorHandlerINT);
+    signal(SIGHUP, ErrorHandlerHUP);
+    signal(SIGINT, ErrorHandlerINT);
 
     int n = 0;
     if (argc == 2){
