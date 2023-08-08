@@ -43,11 +43,13 @@ int main(int argk, char *argv[], char *envp[])
   char           *v[NV];	/* array of pointers to command line tokens */
   char           *sep = " \t\n";/* command line token separators    */
   int             i;		/* parse index */
+  int             jobNo;  /* job number */
 
 
   /* prompt for and process one command line at a time  */
 
   while (1) {			/* do Forever */
+    jobNo = 1;
     prompt();
     char* fgetsReturn = fgets(line, NL, stdin);
     if (fgetsReturn == NULL){
@@ -81,6 +83,8 @@ int main(int argk, char *argv[], char *envp[])
       }
     case 0:			/* code executed only by child process */
       {
+  printf("[%d] %d\n", jobNo, getpid());
+  jobNo++;
 	execvp(v[0], v);
   for (int i = 0; i < 20; i++)
   {
