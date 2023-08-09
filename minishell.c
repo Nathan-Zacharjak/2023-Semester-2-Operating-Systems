@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <string.h>
 
 #define NV 20			/* max number of command tokens */
 #define NL 100			/* input buffer size */
@@ -43,19 +44,20 @@ int main(int argk, char *argv[], char *envp[])
   char           *v[NV];	/* array of pointers to command line tokens */
   char           *sep = " \t\n";/* command line token separators    */
   int             i;		/* parse index */
-  int             jobNo;  /* job number */
+  int             highestJobNo;  /* job number */
+  int             lineLength;
 
 
   /* prompt for and process one command line at a time  */
 
   while (1) {			/* do Forever */
-    jobNo = 1;
     prompt();
     char* fgetsReturn = fgets(line, NL, stdin);
     if (fgetsReturn == NULL){
       printf("fgets is NULL\n");
     }
     fflush(stdin);
+    lineLength = strlen(line);
 
     if (feof(stdin)) {		/* non-zero on EOF  */
 
@@ -70,35 +72,33 @@ int main(int argk, char *argv[], char *envp[])
     for (i = 1; i < NV; i++) {
       v[i] = strtok(NULL, sep);
       if (v[i] == NULL)
-	break;
+	      break;
     }
     /* assert i is number of tokens + 1 */
+
+    // If the command does not end with a "&", don't fork a child process and run it on
+    // the main one instead
+    
+    printf("%c\n", line[lineLength - 1]);
 
     /* fork a child process to exec the command in v[0] */
 
     switch (frkRtnVal = fork()) {
     case -1:			/* fork returns error to parent process */
       {
-	break;
+	      break;
       }
     case 0:			/* code executed only by child process */
-      {
-  printf("[%d] %d\n", jobNo, getpid());
-  int localJobNo = jobNo;
-  jobNo++;
-	execvp(v[0], v);
-  printf("[%d]+ Done ", localJobNo);
-  for (int i = 0; i < 20; i++)
-  {
-    printf("%s", v[i]);
-  }
-  printf("\n");
+      {        
+        // int localJobNo = highestJobNo;
+        highestJobNo++;
+        execvp(v[0], v);
       }
     default:			/* code executed only by parent process */
       {
-	wpid = wait(0);
-	printf("%s done id: %d\n", v[0], wpid);
-	break;
+        wpid = wait(0);
+        printf("%s done id: %d\n", v[0], wpid);
+        break;
       }
     }				/* switch */
   }				/* while */
