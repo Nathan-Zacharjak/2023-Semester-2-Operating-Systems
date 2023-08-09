@@ -78,8 +78,17 @@ int main(int argk, char *argv[], char *envp[])
 
     // If the command does not end with a "&", don't fork a child process and run it on
     // the main one instead
-    
-    printf("%c\n", line[lineLength - 1]);
+    if (strcmp(v[0], "cd")) {
+      chdir(v[1]);
+      continue;
+    }
+
+    char lastCharacter = line[lineLength - 2];
+
+    if (lastCharacter != '&'){
+      
+      
+    }
 
     /* fork a child process to exec the command in v[0] */
 
@@ -93,6 +102,8 @@ int main(int argk, char *argv[], char *envp[])
         // int localJobNo = highestJobNo;
         highestJobNo++;
         execvp(v[0], v);
+        printf("Running on child process id: %d", getpid());
+        break;
       }
     default:			/* code executed only by parent process */
       {
