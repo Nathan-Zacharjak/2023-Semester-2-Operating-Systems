@@ -85,6 +85,8 @@ int main(int argk, char *argv[], char *envp[])
         printf("chdir return is -1");
       }
       continue;
+    } else if (strcmp(v[0], "exit") == 0) {
+      return 0;
     }
 
     // If the last character input in the line is "&"
