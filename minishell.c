@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define NV 20			/* max number of command tokens */
 #define NL 100			/* input buffer size */
@@ -44,9 +45,9 @@ int main(int argk, char *argv[], char *envp[])
   char           *v[NV];	/* array of pointers to command line tokens */
   char           *sep = " \t\n";/* command line token separators    */
   int             i;		/* parse index */
-  int             highestJobNo;  /* job number */
-  int             lineLength;
-
+  int             parameterCount; /* number of parameters passed */
+  char            lastChar; /* last character in line input */
+  bool            backgroundProcess; /* whether the current command should be run in background */
 
   /* prompt for and process one command line at a time  */
 
@@ -57,7 +58,6 @@ int main(int argk, char *argv[], char *envp[])
       printf("fgets is NULL\n");
     }
     fflush(stdin);
-    lineLength = strlen(line);
 
     if (feof(stdin)) {		/* non-zero on EOF  */
 
@@ -68,11 +68,15 @@ int main(int argk, char *argv[], char *envp[])
     if (line[0] == '#' || line[0] == '\n' || line[0] == '\000')
       continue;			/* to prompt */
 
+    parameterCount = 0;
     v[0] = strtok(line, sep);
     for (i = 1; i < NV; i++) {
       v[i] = strtok(NULL, sep);
-      if (v[i] == NULL)
+      if (v[i] == NULL) {
 	      break;
+      } else {
+        parameterCount++;
+      }
     }
     /* assert i is number of tokens + 1 */
 
@@ -94,13 +98,25 @@ int main(int argk, char *argv[], char *envp[])
     // for a new command to be run while the background
     // one is running
     // (i.e. don't wait for the child process to be done)
-    char lastCharacter = line[lineLength - 2];
+    if (parameterCount == 0){
+      lastChar = line[strlen(line) - 1];
 
-    if (lastCharacter != '&'){
-      
-      
+      backgroundProcess = lastChar == '&';
+      if (backgroundProcess){
+        line[strlen(line) - 1] = '\0';
+      }
+    } else {
+      lastChar = v[parameterCount][strlen(v[parameterCount]) - 1];
+
+      backgroundProcess = lastChar == '&';
+      if (backgroundProcess){
+        v[parameterCount][strlen(v[parameterCount]) - 1] = '\0';
+      }
     }
-
+    
+    printf("Last char: %c Parameter count: %d Background process: %d\n", lastChar, parameterCount, backgroundProcess);
+    printf("v[0]: %s v[1]: %s\n", v[0], v[1]);
+    
     /* fork a child process to exec the command in v[0] */
 
     switch (frkRtnVal = fork()) {
@@ -109,17 +125,19 @@ int main(int argk, char *argv[], char *envp[])
 	      break;
       }
     case 0:			/* code executed only by child process */
-      {        
-        // int localJobNo = highestJobNo;
-        highestJobNo++;
+      {
         execvp(v[0], v);
-        printf("Running on child process id: %d", getpid());
-        break;
+        return 0;
       }
     default:			/* code executed only by parent process */
       {
-        wpid = wait(0);
-        printf("%s done id: %d\n", v[0], wpid);
+        if (backgroundProcess){
+          printf("Background process: %s", v[0]);
+        } else {
+          wpid = wait(0);
+          printf("%s done id: %d\n", v[0], wpid);
+        }
+
         break;
       }
     }				/* switch */
