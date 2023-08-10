@@ -45,7 +45,7 @@ void reportDoneChildProcesses(int processes[NP]){
     int pid = processes[jobno];
 
     // If the job number has an active job...
-    if (pid != 0){
+    if (pid != 0 && pid != -1){
       // Check if the associated child process is still active
       int wpid = waitpid(pid, 0, WNOHANG);
       if (wpid == 0){
@@ -96,7 +96,7 @@ int main(int argk, char *argv[], char *envp[])
     prompt();
     char* fgetsReturn = fgets(line, NL, stdin);
     if (fgetsReturn == NULL){
-      printf("fgets is NULL\n");
+      // printf("fgets is NULL\n");
     }
     fflush(stdin);
     reportDoneChildProcesses(processes);
@@ -128,7 +128,7 @@ int main(int argk, char *argv[], char *envp[])
       int chdirReturn = chdir(v[1]);
 
       if (chdirReturn == -1){
-        printf("chdir return is -1");
+        // printf("chdir return is -1");
       }
       continue;
     } else if (strcmp(v[0], "exit") == 0) {
