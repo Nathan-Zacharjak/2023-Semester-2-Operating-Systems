@@ -20,6 +20,7 @@
 
 #define NV 20			/* max number of command tokens */
 #define NL 100			/* input buffer size */
+#define NP 100		  /* max number of concurrent background processes */
 char            line[NL];	/* command input buffer */
 
 
@@ -28,7 +29,7 @@ char            line[NL];	/* command input buffer */
  */
 
 void prompt(void){
-  fprintf(stdout, "\n msh> ");
+  fprintf(stdout, " msh> ");
   fflush(stdout);
   return;
 }
@@ -48,6 +49,8 @@ int main(int argk, char *argv[], char *envp[])
   int             parameterCount; /* number of parameters passed */
   char            lastChar; /* last character in line input */
   bool            backgroundProcess; /* whether the current command should be run in background */
+  int             jobNumber = 0;
+  int             processes[NP];
 
   /* prompt for and process one command line at a time  */
 
@@ -61,8 +64,8 @@ int main(int argk, char *argv[], char *envp[])
 
     if (feof(stdin)) {		/* non-zero on EOF  */
 
-      fprintf(stderr, "EOF pid %d feof %d ferror %d\n", getpid(),
-	      feof(stdin), ferror(stdin));
+      // fprintf(stderr, "EOF pid %d feof %d ferror %d\n", getpid(),
+	    //   feof(stdin), ferror(stdin));
       exit(0);
     }
     if (line[0] == '#' || line[0] == '\n' || line[0] == '\000')
@@ -132,16 +135,23 @@ int main(int argk, char *argv[], char *envp[])
       }
     case 0:			/* code executed only by child process */
       {
+        if (backgroundProcess){
+          jobNumber++;
+          printf("[%d] %d\n", jobNumber, getpid());
+        }
         execvp(v[0], v);
         return 0;
       }
     default:			/* code executed only by parent process */
       {
-        if (backgroundProcess){
-          printf("Background process: %s", v[0]);
-        } else {
+        // If we aren't executing a background process,
+        // then wait for the child process to finish
+        if (!backgroundProcess){
           wpid = wait(0);
-          printf("%s done id: %d\n", v[0], wpid);
+          if (wpid == -1){
+            printf("wpid is -1\n");
+          }
+          
         }
 
         break;
