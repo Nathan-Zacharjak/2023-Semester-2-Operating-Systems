@@ -37,12 +37,12 @@ void prompt(void){
 // Prints all child processes that are done and
 // updates all job ids to fill in gaps left by done
 // child processes
-void reportDoneChildProcesses(int processes[NP]){
+void reportDoneChildProcesses(int processes[NP], char* jobCommands[NP]){
   bool noProcessesActive = true;
 
   // For every job in the processes list...
-  for (int jobno = 0; jobno < NP; jobno++){
-    int pid = processes[jobno];
+  for (int jobNo = 0; jobNo < NP; jobNo++){
+    int pid = processes[jobNo];
 
     // If the job number has an active job...
     if (pid != 0 && pid != -1){
@@ -54,9 +54,11 @@ void reportDoneChildProcesses(int processes[NP]){
         noProcessesActive = false;
       } else {
         // If a child is done, report it, and mark as done
-        printf("[%d]+  Done                    %d\n", jobno, wpid);
+        printf("[%d]+  Done                    %s\n", jobNo, jobCommands[jobNo]);
         // -1 indicates a job is done, but the job id isn't free yet
-        processes[jobno] = -1;
+        processes[jobNo] = -1;
+        // Free the memory used by the job command string
+        free(jobCommands[jobNo]);
       }
     }
   }
@@ -88,6 +90,7 @@ int main(int argk, char *argv[], char *envp[])
   char            lastChar; /* last character in line input */
   bool            backgroundProcess; /* whether the current command should be run in background */
   int             processes[NP] = {0}; /* Array of active process job numbers */
+  char           *jobCommands[NP]; /* Array of the string entered for each job by job number */
 
 
   /* prompt for and process one command line at a time  */
@@ -99,7 +102,7 @@ int main(int argk, char *argv[], char *envp[])
       // printf("fgets is NULL\n");
     }
     fflush(stdin);
-    reportDoneChildProcesses(processes);
+    reportDoneChildProcesses(processes, jobCommands);
 
     if (feof(stdin)) {		/* non-zero on EOF  */
 
@@ -189,6 +192,26 @@ int main(int argk, char *argv[], char *envp[])
               processes[jobNo] = frkRtnVal;
               // Report the process as started
               printf("[%d] %d\n", jobNo, frkRtnVal);
+
+              // Save the entered command to display when
+              // the job is reported as done
+
+              // +1 for string null terminator
+              jobCommands[jobNo] = malloc(sizeof(line) + 1);
+
+              // Add initial command
+              strcpy(jobCommands[jobNo], v[0]);
+              
+              // Add tokens, if any
+              for (int j = 1; j < NV; j++){
+                if (v[j] == NULL){
+                  break;
+                }
+                char* token = v[j];
+                strcat(jobCommands[jobNo], " ");
+                strcat(jobCommands[jobNo], token);
+              }
+              
               break;
             }
             
