@@ -50,7 +50,8 @@ int main(int argk, char *argv[], char *envp[])
   char            lastChar; /* last character in line input */
   bool            backgroundProcess; /* whether the current command should be run in background */
   int             jobNumber = 0; /* Current job number */
-  // int             processes[NP]; /* Array of active process job numbers */
+  int             processes[NP] = {0}; /* Array of active process job numbers */
+
 
   /* prompt for and process one command line at a time  */
 
@@ -135,10 +136,6 @@ int main(int argk, char *argv[], char *envp[])
       }
     case 0:			/* code executed only by child process */
       {
-        if (backgroundProcess){
-          jobNumber++;
-          printf("[%d] %d\n", jobNumber, getpid());
-        }
         execvp(v[0], v);
         return 0;
       }
@@ -146,10 +143,14 @@ int main(int argk, char *argv[], char *envp[])
       {
         // If we aren't executing a background process,
         // then wait for the child process to finish
-        if (!backgroundProcess){
+        if (backgroundProcess){
+          jobNumber++;
+          printf("[%d] %d\n", jobNumber, frkRtnVal);
+
+          } else { 
           wpid = wait(0);
           if (wpid == -1){
-            // printf("wpid is -1\n");
+            printf("wpid is -1\n");
           }
           
         }
