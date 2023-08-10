@@ -131,7 +131,7 @@ int main(int argk, char *argv[], char *envp[])
       int chdirReturn = chdir(v[1]);
 
       if (chdirReturn == -1){
-        // printf("chdir return is -1");
+        perror("Change directory error");
       }
       continue;
     } else if (strcmp(v[0], "exit") == 0) {
@@ -177,7 +177,13 @@ int main(int argk, char *argv[], char *envp[])
       }
     case 0:			/* code executed only by child process */
       {
-        execvp(v[0], v);
+        int exeReturn = execvp(v[0], v);
+
+        // Terminate child process if system call fails
+        // and throw an error
+        if (exeReturn == -1){
+          perror("Execution of command on child process errored");
+        }
         return 0;
       }
     default:			/* code executed only by parent process */
@@ -201,7 +207,7 @@ int main(int argk, char *argv[], char *envp[])
 
               // Add initial command
               strcpy(jobCommands[jobNo], v[0]);
-              
+
               // Add tokens, if any
               for (int j = 1; j < NV; j++){
                 if (v[j] == NULL){
@@ -222,7 +228,7 @@ int main(int argk, char *argv[], char *envp[])
           // then wait for the child process to finish
           wpid = waitpid(frkRtnVal, 0, 0);
           if (wpid == -1){
-            printf("wpid is -1\n");
+            perror("Child process encountered an error");
           }
           
         }
