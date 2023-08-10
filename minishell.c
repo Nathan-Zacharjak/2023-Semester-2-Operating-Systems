@@ -110,12 +110,18 @@ int main(int argk, char *argv[], char *envp[])
 
       backgroundProcess = lastChar == '&';
       if (backgroundProcess){
-        v[parameterCount][strlen(v[parameterCount]) - 1] = '\0';
+
+        // If the last parameter is "&" then remove it
+        if (strcmp(v[parameterCount], "&") == 0){
+          v[parameterCount] = NULL;
+        } else {
+          v[parameterCount][strlen(v[parameterCount]) - 1] = '\0';
+        }
       }
     }
     
-    printf("Last char: %c Parameter count: %d Background process: %d\n", lastChar, parameterCount, backgroundProcess);
-    printf("v[0]: %s v[1]: %s\n", v[0], v[1]);
+    // printf("Last char: %c Parameter count: %d Background process: %d\n", lastChar, parameterCount, backgroundProcess);
+    // printf("v[0]: %s v[1]: %s\n", v[0], v[1]);
     
     /* fork a child process to exec the command in v[0] */
 
