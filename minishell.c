@@ -61,6 +61,14 @@ void reportDoneChildProcesses(int processes[NP]){
     }
   }
 
+  // If no processes are active, reset the highest available
+  // job number to 1
+  if (noProcessesActive){
+    for (int jobNo = 1; jobNo < NP; jobNo++){
+      processes[jobNo] = 0;
+    }
+  }
+
   return;
 }
 
