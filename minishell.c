@@ -76,13 +76,22 @@ int main(int argk, char *argv[], char *envp[])
     }
     /* assert i is number of tokens + 1 */
 
-    // If the command does not end with a "&", don't fork a child process and run it on
-    // the main one instead
-    if (strcmp(v[0], "cd")) {
-      chdir(v[1]);
+    // If the command is "cd", don't use a child process and
+    // run chdir() on the main process instead!
+    if (strcmp(v[0], "cd") == 0) {
+      int chdirReturn = chdir(v[1]);
+
+      if (chdirReturn == -1){
+        printf("chdir return is -1");
+      }
       continue;
     }
 
+    // If the last character input in the line is "&"
+    // put the process in "background mode" and allow
+    // for a new command to be run while the background
+    // one is running
+    // (i.e. don't wait for the child process to be done)
     char lastCharacter = line[lineLength - 2];
 
     if (lastCharacter != '&'){
