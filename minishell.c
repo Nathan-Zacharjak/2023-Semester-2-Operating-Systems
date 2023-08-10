@@ -29,7 +29,7 @@ char            line[NL];	/* command input buffer */
  */
 
 void prompt(void){
-  fprintf(stdout, " msh> ");
+  // fprintf(stdout, " msh> ");
   fflush(stdout);
   return;
 }
@@ -49,8 +49,8 @@ int main(int argk, char *argv[], char *envp[])
   int             parameterCount; /* number of parameters passed */
   char            lastChar; /* last character in line input */
   bool            backgroundProcess; /* whether the current command should be run in background */
-  int             jobNumber = 0;
-  int             processes[NP];
+  int             jobNumber = 0; /* Current job number */
+  // int             processes[NP]; /* Array of active process job numbers */
 
   /* prompt for and process one command line at a time  */
 
@@ -149,7 +149,7 @@ int main(int argk, char *argv[], char *envp[])
         if (!backgroundProcess){
           wpid = wait(0);
           if (wpid == -1){
-            printf("wpid is -1\n");
+            // printf("wpid is -1\n");
           }
           
         }
