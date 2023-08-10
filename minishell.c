@@ -34,6 +34,36 @@ void prompt(void){
   return;
 }
 
+// Prints all child processes that are done and
+// updates all job ids to fill in gaps left by done
+// child processes
+void reportDoneChildProcesses(int processes[NP]){
+  bool noProcessesActive = true;
+
+  // For every job in the processes list...
+  for (int jobno = 0; jobno < NP; jobno++){
+    int pid = processes[jobno];
+
+    // If the job number has an active job...
+    if (pid != 0){
+      // Check if the associated child process is still active
+      int wpid = waitpid(pid, 0, WNOHANG);
+      if (wpid == 0){
+        // If a child process is still going, don't reset
+        // the last job id to 1
+        noProcessesActive = false;
+      } else {
+        // If a child is done, report it, and mark as done
+        printf("[%d]+  Done                    %d\n", jobno, wpid);
+        // -1 indicates a job is done, but the job id isn't free yet
+        processes[jobno] = -1;
+      }
+    }
+  }
+
+  return;
+}
+
 
 int main(int argk, char *argv[], char *envp[])
 /* argk - number of arguments */
@@ -49,7 +79,6 @@ int main(int argk, char *argv[], char *envp[])
   int             parameterCount; /* number of parameters passed */
   char            lastChar; /* last character in line input */
   bool            backgroundProcess; /* whether the current command should be run in background */
-  int             jobNumber = 0; /* Current job number */
   int             processes[NP] = {0}; /* Array of active process job numbers */
 
 
@@ -62,6 +91,7 @@ int main(int argk, char *argv[], char *envp[])
       printf("fgets is NULL\n");
     }
     fflush(stdin);
+    reportDoneChildProcesses(processes);
 
     if (feof(stdin)) {		/* non-zero on EOF  */
 
@@ -141,14 +171,25 @@ int main(int argk, char *argv[], char *envp[])
       }
     default:			/* code executed only by parent process */
       {
-        // If we aren't executing a background process,
-        // then wait for the child process to finish
-        if (backgroundProcess){
-          jobNumber++;
-          printf("[%d] %d\n", jobNumber, frkRtnVal);
 
-          } else { 
-          wpid = wait(0);
+        if (backgroundProcess){
+          // If we're executing a background process,
+          // find the first available job number,
+          // and assign that to the process
+          for (int jobNo = 1; jobNo < NP; jobNo++){
+            if (processes[jobNo] == 0){
+              processes[jobNo] = frkRtnVal;
+              // Report the process as started
+              printf("[%d] %d\n", jobNo, frkRtnVal);
+              break;
+            }
+            
+          }
+
+          } else {
+          // If we aren't executing a background process,
+          // then wait for the child process to finish
+          wpid = waitpid(frkRtnVal, 0, 0);
           if (wpid == -1){
             printf("wpid is -1\n");
           }
